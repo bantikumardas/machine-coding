@@ -38,19 +38,20 @@ jobs:
 
       # Step 5 - Restart app on EC2
       - name: Restart Spring Boot App
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-              # Stop existing app
-              pkill -f 'MachineCoding' || true
-              sleep 3
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          # Setup SSH key
+          echo "$SSH_KEY" > private_key.pem
+          chmod 400 private_key.pem
 
-              # Run new JAR completely detached from SSH session
-              nohup java -jar /home/ec2-user/MachineCoding-0.0.1-SNAPSHOT.jar \
-                > /home/ec2-user/app.log 2>&1 </dev/null &
+          # SSH into EC2 and restart app
+          ssh -o StrictHostKeyChecking=no \
+              -i private_key.pem \
+              $EC2_USERNAME@$EC2_HOST \
+              "sudo systemctl stop springapp || true; sleep 2; sudo systemctl start springapp; echo Done"
 
-              disown $!
-              echo "App started successfully"
+          # Cleanup key
+          rm -f private_key.pem
