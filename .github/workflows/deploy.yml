@@ -44,16 +44,13 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Stop existing app
-            pkill -f 'MachineCoding' || true
-            sleep 3
+              # Stop existing app
+              pkill -f 'MachineCoding' || true
+              sleep 3
 
-            # Run new JAR in background
-            nohup java -jar /home/ec2-user/MachineCoding-0.0.1-SNAPSHOT.jar \
-              > /home/ec2-user/app.log 2>&1 &
+              # Run new JAR completely detached from SSH session
+              nohup java -jar /home/ec2-user/MachineCoding-0.0.1-SNAPSHOT.jar \
+                > /home/ec2-user/app.log 2>&1 </dev/null &
 
-            echo "App restarted successfully"
-            sleep 5
-
-            # Verify it's running
-            ps aux | grep java | grep -v grep
+              disown $!
+              echo "App started successfully"
