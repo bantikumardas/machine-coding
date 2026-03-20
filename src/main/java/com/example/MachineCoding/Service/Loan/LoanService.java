@@ -2,7 +2,9 @@ package com.example.MachineCoding.Service.Loan;
 
 import com.example.MachineCoding.DTO.LoanDTO;
 import com.example.MachineCoding.Models.Loan.*;
+import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Repository.Loan.*;
+import com.example.MachineCoding.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ public class LoanService {
     @Autowired
     private LoanRepo loanRepo;
     @Autowired
-    private UserRepo userRepo;
+    private UserRepository userRepo;
     @Autowired
     private LoanProductRepo loanProductRepo;
     @Autowired
@@ -53,8 +55,8 @@ public class LoanService {
 
         //create loan
         Loan loan=new Loan();
-        loan.setBorrower(borrower);
-        loan.setAgent(agent);
+//        loan.setBorrower(borrower);
+//        loan.setAgent(agent);
         loan.setBorrowerImageUrl(loanReq.getBorrowerImageUrl());
         loan.setLoanProduct(loanProduct);
         loan.setInterestRate(loanProduct.getDefInterestRate());

@@ -1,5 +1,6 @@
 package com.example.MachineCoding.Models.Loan;
 
+import com.example.MachineCoding.Models.User;
 import jakarta.persistence.*;
 import lombok.Data;
 

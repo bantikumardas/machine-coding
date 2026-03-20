@@ -1,11 +1,10 @@
 package com.example.MachineCoding.Service.Loan;
 
-import com.example.MachineCoding.Models.Loan.Address;
 import com.example.MachineCoding.Models.Loan.Login;
-import com.example.MachineCoding.Models.Loan.User;
+import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Repository.Loan.AddressRepo;
 import com.example.MachineCoding.Repository.Loan.LoginRepo;
-import com.example.MachineCoding.Repository.Loan.UserRepo;
+import com.example.MachineCoding.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,7 @@ import java.util.Random;
 @Service
 public class UserService {
     @Autowired
-    private UserRepo userRepo;
+    private UserRepository userRepo;
     @Autowired
     private AddressRepo addressRepo;
     @Autowired
@@ -43,10 +42,10 @@ public class UserService {
         if(userRepo.findByEmail(email).isPresent()){
             return ResponseEntity.badRequest().body("Email already exists");
         }
-        if(userRepo.findByPhoneNumber(phoneNumber).isPresent()){
-            return ResponseEntity.badRequest().body("Phone number already exists");
-        }
-        addressRepo.save(user.getAddress());
+//        if(userRepo.findByPhoneNumber(phoneNumber).isPresent()){
+//            return ResponseEntity.badRequest().body("Phone number already exists");
+//        }
+//        addressRepo.save(user.getAddress());
         User createdUser=userRepo.save(user);
         return ResponseEntity.ok(createdUser);
     }
@@ -66,7 +65,7 @@ public class UserService {
         login.setToken(token);
         login.setEmail(email);
         login.setLoginTime(System.currentTimeMillis());
-        login.setRole(user.get().getRole());
+//        login.setRole(user.get().getRole());
         login.setTokenExpiryTime(System.currentTimeMillis()+1000*60*60);
         loginRepo.save(login);
         return ResponseEntity.ok("Login successful. Your token is: "+token);

@@ -1,6 +1,7 @@
 package com.example.MachineCoding.Models.SplitWise;
 
 
+import com.example.MachineCoding.Models.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ public class Participant {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "participant_id")
-    private Users participant;
+    private User participant;
     private Double shareAmount;
     @ManyToOne
     @JoinColumn(name = "transaction_id")

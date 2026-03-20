@@ -1,10 +1,7 @@
 package com.example.MachineCoding.DTO.SplitWise;
 
-import com.example.MachineCoding.Models.SplitWise.Transaction;
-import com.example.MachineCoding.Models.SplitWise.Users;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 @Data

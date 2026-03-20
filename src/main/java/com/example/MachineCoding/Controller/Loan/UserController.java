@@ -1,6 +1,6 @@
 package com.example.MachineCoding.Controller.Loan;
 
-import com.example.MachineCoding.Models.Loan.User;
+import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Service.Loan.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

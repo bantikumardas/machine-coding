@@ -1,5 +1,6 @@
 package com.example.MachineCoding.Models.SplitWise;
 
+import com.example.MachineCoding.Models.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,7 +18,7 @@ public class Transaction {
     private String category;
     @ManyToOne
     @JoinColumn(name = "paid_by_id")
-    private Users paidBy;
+    private User paidBy;
     private String status;//active, settled, cancelled, Initiated
     @ManyToOne
     @JoinColumn(name = "group_id")

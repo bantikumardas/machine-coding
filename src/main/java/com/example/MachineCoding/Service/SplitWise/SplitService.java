@@ -4,12 +4,12 @@ package com.example.MachineCoding.Service.SplitWise;
 import com.example.MachineCoding.DTO.SplitWise.TransactionReqDTO;
 import com.example.MachineCoding.DTO.SplitWise.UserGroupReqDTO;
 import com.example.MachineCoding.ErrorHandler.BadRequestException;
-import com.example.MachineCoding.Models.Loan.User;
 import com.example.MachineCoding.Models.SplitWise.*;
+import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Repository.SplitWise.ParticipantRepo;
 import com.example.MachineCoding.Repository.SplitWise.TransactionRepo;
 import com.example.MachineCoding.Repository.SplitWise.UserGroupRepo;
-import com.example.MachineCoding.Repository.SplitWise.UsersRepo;
+import com.example.MachineCoding.Repository.UserRepository;
 import com.example.MachineCoding.Utils.PasswordUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.List;
 @Service
 public class SplitService {
     @Autowired
-    private UsersRepo usersRepo;
+    private UserRepository usersRepo;
     @Autowired
     private PasswordUtil passwordUtil;
     @Autowired
@@ -34,7 +34,7 @@ public class SplitService {
     @Autowired
     private ParticipantRepo participantRepo;
 
-    public ResponseEntity<Users> createUser(Users users) {
+    public ResponseEntity<User> createUser(User users) {
             String email= users.getEmail();
             String password= users.getHashPassword();
             if(!isValidEmail(email)){
@@ -48,7 +48,7 @@ public class SplitService {
             }
             String hashedPassword = passwordUtil.hashPassword(password);
             users.setHashPassword(hashedPassword);
-            Users savedUser=usersRepo.save(users);
+            User savedUser=usersRepo.save(users);
             savedUser.setHashPassword(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
 
@@ -71,12 +71,12 @@ public class SplitService {
             userGroup.setGroupName(userGroupDto.getGroupName());
             userGroup.setGroupDescription(userGroupDto.getGroupDescription());
             userGroup.setGroupImageUrl(userGroupDto.getGroupImageUrl());
-            List<Users> users=new ArrayList<>();
+            List<User> users=new ArrayList<>();
             for(String s: userGroupDto.getMembersId()){
                 users.add(usersRepo.findById(Long.parseLong(s)).get());
             }
             userGroup.setMembers(users);
-            Users admin=usersRepo.findById(Long.parseLong(userGroupDto.getCreatedBy())).get();
+            User admin=usersRepo.findById(Long.parseLong(userGroupDto.getCreatedBy())).get();
             if(admin==null){
                 throw  new BadRequestException("groud admin id is not found");
             }
@@ -94,7 +94,7 @@ public class SplitService {
         if(transactionReqDTO.getCategory()==null || transactionReqDTO.getCategory()==""){
             throw  new BadRequestException("Category is empty");
         }
-        Users padiBy=usersRepo.findById(Long.parseLong(transactionReqDTO.getPaidBy())).get();
+        User padiBy=usersRepo.findById(Long.parseLong(transactionReqDTO.getPaidBy())).get();
         if(padiBy==null){
             throw  new BadRequestException("paidBy is not found");
         }
@@ -112,7 +112,7 @@ public class SplitService {
         List<Participant> participant=new ArrayList<>();
         double totalAmount=0;
         for(ParticipantDto s: transactionReqDTO.getParticipantsId()){
-            Users users=usersRepo.findById(Long.parseLong(s.getParticipantId())).get();
+            User users=usersRepo.findById(Long.parseLong(s.getParticipantId())).get();
             if(users==null){
                 throw  new BadRequestException("participants id is not found");
             }
@@ -132,8 +132,8 @@ public class SplitService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Transaction added successfully.");
     }
 
-    public ResponseEntity<Users> getUser(Long userId) {
-        Users users=usersRepo.findById(userId).get();
+    public ResponseEntity<User> getUser(Long userId) {
+        User users=usersRepo.findById(userId).get();
         if(users==null){
             throw  new BadRequestException("user is not found");
         }
