@@ -20,6 +20,7 @@ public class SplitController {
     @PostMapping("/users")
     public ResponseEntity<User> createUser(@RequestBody User users) {
         // Implementation for creating a user
+
         System.out.println("Calling for create user : "+users.toString());
         return splitService.createUser(users);
     }
