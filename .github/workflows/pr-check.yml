@@ -23,6 +23,10 @@ jobs:
 
       # Step 3 - Build & Test
       - name: Build and Test
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-southeast-2
         run: mvn clean package
 
       # Step 4 - Run Tests only
