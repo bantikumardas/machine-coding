@@ -1,5 +1,4 @@
 package com.example.MachineCoding.DTO.SplitWise;
-import com.example.MachineCoding.Models.SplitWise.ParticipantDto;
 import lombok.Data;
 import java.util.List;
 
@@ -14,5 +13,12 @@ public class TransactionReqDTO {
     private String groupId;
     private List<ParticipantDto> participantsId;
 
+    @Data
+    public static class ParticipantDto {
+        private Long id;
+        private String participantId;
+        private Double shareAmount;
+        private String transactionId;
+    }
 }
 
