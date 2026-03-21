@@ -5,6 +5,7 @@ import com.example.MachineCoding.DTO.RegisterRequest;
 import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,15 +15,18 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authManager;
-    private final JwtService jwtService;
+    @Autowired
+    private  UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private  AuthenticationManager authManager;
+    @Autowired
+    private JwtService jwtService;
 
     public AuthResponse register(RegisterRequest req) {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("User already exists with email: " + req.getEmail());
+            throw new RuntimeException("email already exists");
         }
         User user = new User();
         user.setEmail(req.getEmail());
