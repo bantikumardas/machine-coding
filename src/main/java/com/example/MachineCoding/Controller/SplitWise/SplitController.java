@@ -40,7 +40,7 @@ public class SplitController {
     /**
      * Who owes whom in a group (from accumulated {@link com.example.MachineCoding.Models.SplitWise.BalanceSheet} rows).
      */
-    @GetMapping("/group/{groupId}/balances")
+    @GetMapping("/group/{groupId}")
     public ResponseEntity<List<BalanceEntryDTO>> getGroupBalances(@PathVariable Long groupId) {
         return ResponseEntity.ok(splitService.getGroupBalances(groupId));
     }

@@ -173,6 +173,7 @@ public class SplitService {
         return Math.round(v * 100.0) / 100.0;
     }
 
+    @Transactional()
     public List<BalanceEntryDTO> getGroupBalances(Long groupId) {
         userGroupRepo.findById(groupId)
                 .orElseThrow(() -> new BadRequestException("group is not found"));
