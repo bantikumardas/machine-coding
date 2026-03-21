@@ -22,8 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -43,6 +42,8 @@ public class SplitService {
     private BalanceSheetRepo balanceSheetRepo;
     @Autowired
     private AuthUtil authUtil;
+    @Autowired
+    private jakarta.persistence.EntityManager entityManager;
 
 
     public ResponseEntity<UserGroup> createUserGroup(UserGroupReqDTO userGroupDto) {
@@ -125,6 +126,7 @@ public class SplitService {
         }
 
         applyExpenseToBalanceSheet(userGroup, paidBy, savedParticipants);
+        simplifyBalances(userGroup.getId());
 
         savedTransaction.setStatus("active");
         savedTransaction.setParticipants(savedParticipants);
@@ -211,5 +213,76 @@ public class SplitService {
             List<Participant> parts = participantRepo.findByTransaction_Id(t.getId());
             applyExpenseToBalanceSheet(group, t.getPaidBy(), parts);
         }
+    }
+
+    @Transactional
+    public void simplifyBalances(Long groupId) {
+        UserGroup group = userGroupRepo.findById(groupId)
+                .orElseThrow(() -> new BadRequestException("group not found"));
+
+        List<BalanceSheet> rows = balanceSheetRepo.findByUserGroup_Id(groupId);
+
+        // Calculate net balances BEFORE deleting
+        Map<Long, Double> netBalance = new HashMap<>();
+        Map<Long, User> userMap = new HashMap<>();
+
+        for (BalanceSheet b : rows) {
+            Long giverId = b.getGiver().getId();
+            Long takerId = b.getTaker().getId();
+            double amount = b.getBalance();
+
+            netBalance.merge(giverId, -amount, Double::sum);
+            netBalance.merge(takerId, +amount, Double::sum);
+            userMap.put(giverId, b.getGiver());
+            userMap.put(takerId, b.getTaker());
+        }
+
+        // Delete and FLUSH immediately
+        balanceSheetRepo.deleteAll(rows);
+        balanceSheetRepo.flush();          // ← forces DELETE to hit DB now
+        entityManager.clear();             // ← clears JPA cache
+
+        // Now build simplified list
+        PriorityQueue<long[]> creditors = new PriorityQueue<>((a, b) -> Double.compare(
+                Double.longBitsToDouble(b[1]), Double.longBitsToDouble(a[1])));
+        PriorityQueue<long[]> debtors = new PriorityQueue<>((a, b) -> Double.compare(
+                Double.longBitsToDouble(a[1]), Double.longBitsToDouble(b[1])));
+
+        for (Map.Entry<Long, Double> entry : netBalance.entrySet()) {
+            double net = roundMoney(entry.getValue());
+            if (net > MONEY_EPSILON) {
+                creditors.offer(new long[]{entry.getKey(), Double.doubleToLongBits(net)});
+            } else if (net < -MONEY_EPSILON) {
+                debtors.offer(new long[]{entry.getKey(), Double.doubleToLongBits(net)});
+            }
+        }
+
+        List<BalanceSheet> simplified = new ArrayList<>();
+        while (!creditors.isEmpty() && !debtors.isEmpty()) {
+            long[] creditor = creditors.poll();
+            long[] debtor   = debtors.poll();
+
+            double credit = Double.longBitsToDouble(creditor[1]);
+            double debt   = -Double.longBitsToDouble(debtor[1]);
+
+            double settled = roundMoney(Math.min(credit, debt));
+
+            BalanceSheet b = new BalanceSheet();
+            b.setUserGroup(group);
+            b.setGiver(userMap.get(debtor[0]));
+            b.setTaker(userMap.get(creditor[0]));
+            b.setBalance(settled);
+            simplified.add(b);
+
+            double remainCredit = roundMoney(credit - settled);
+            double remainDebt   = roundMoney(debt - settled);
+
+            if (remainCredit > MONEY_EPSILON)
+                creditors.offer(new long[]{creditor[0], Double.doubleToLongBits(remainCredit)});
+            if (remainDebt > MONEY_EPSILON)
+                debtors.offer(new long[]{debtor[0], Double.doubleToLongBits(-remainDebt)});
+        }
+
+        balanceSheetRepo.saveAll(simplified);
     }
 }
