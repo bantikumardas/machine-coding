@@ -318,4 +318,18 @@ public class SplitService {
         }
         return ResponseEntity.ok(userGroupResponseDTO);
     }
+
+    public ResponseEntity<List<UserDto>> searchUsers(String query){
+        List<User> users=usersRepo.findByUserNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+        List<UserDto> userDtos=new ArrayList<>();
+        for(User user:users){
+            UserDto userDto=new UserDto();
+            userDto.setId(user.getId());
+            userDto.setUserName(user.getUsername());
+            userDto.setEmail(user.getEmail());
+            userDto.setGender(user.getGender());
+            userDtos.add(userDto);
+        }
+        return ResponseEntity.ok(userDtos);
+    }
 }
