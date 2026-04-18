@@ -4,7 +4,10 @@ package com.example.MachineCoding.Service.SplitWise;
 import com.example.MachineCoding.DTO.SplitWise.BalanceEntryDTO;
 import com.example.MachineCoding.DTO.SplitWise.TransactionReqDTO;
 import com.example.MachineCoding.DTO.SplitWise.UserGroupReqDTO;
+import com.example.MachineCoding.DTO.SplitWise.UserGroupResponseDTO;
+import com.example.MachineCoding.DTO.UserDto;
 import com.example.MachineCoding.ErrorHandler.BadRequestException;
+import com.example.MachineCoding.ErrorHandler.ResourceNotFoundException;
 import com.example.MachineCoding.Models.SplitWise.BalanceSheet;
 import com.example.MachineCoding.Models.SplitWise.Participant;
 import com.example.MachineCoding.Models.SplitWise.Transaction;
@@ -284,5 +287,35 @@ public class SplitService {
         }
 
         balanceSheetRepo.saveAll(simplified);
+    }
+
+    public ResponseEntity<List<UserGroupResponseDTO>> getGroupOfCurrentUser() {
+        User user=authUtil.getCurrentUser();
+        if(user==null)
+            throw new BadRequestException("Unauthorize access");
+        List<UserGroup> userGroups=userGroupRepo.findGroupsByMemberId(user.getId());
+        if(userGroups.isEmpty())
+            throw new ResourceNotFoundException("No UserGroup found");
+        List<UserGroupResponseDTO> userGroupResponseDTO=new ArrayList<>();
+        for(UserGroup userGroup:userGroups){
+            UserGroupResponseDTO u=new UserGroupResponseDTO();
+            u.setId(userGroup.getId());
+            u.setGroupName(userGroup.getGroupName());
+            u.setGroupDescription(userGroup.getGroupDescription());
+
+            UserDto userDto=new UserDto();
+            userDto.setId(userGroup.getCreatedBy().getId());
+            userDto.setUserName(userGroup.getCreatedBy().getUsername());
+            userDto.setEmail(userGroup.getCreatedBy().getEmail());
+            userDto.setGender(userGroup.getCreatedBy().getGender());
+            userDto.setEmail(userGroup.getCreatedBy().getEmail());
+
+            u.setCreatedBy(userDto);
+            u.setGroupImageUrl(userGroup.getGroupImageUrl());
+            u.setCreatedDate(userGroup.getCreatedDate());
+            u.setUpdatedDate(userGroup.getUpdatedDate());
+            userGroupResponseDTO.add(u);
+        }
+        return ResponseEntity.ok(userGroupResponseDTO);
     }
 }
