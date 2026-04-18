@@ -5,6 +5,7 @@ import com.example.MachineCoding.DTO.SplitWise.BalanceEntryDTO;
 import com.example.MachineCoding.DTO.SplitWise.TransactionReqDTO;
 import com.example.MachineCoding.DTO.SplitWise.UserGroupReqDTO;
 import com.example.MachineCoding.DTO.SplitWise.UserGroupResponseDTO;
+import com.example.MachineCoding.DTO.UserDto;
 import com.example.MachineCoding.Models.SplitWise.UserGroup;
 import com.example.MachineCoding.Models.User;
 import com.example.MachineCoding.Service.SplitWise.SplitService;
@@ -49,6 +50,11 @@ public class SplitController {
     @GetMapping("/get/group")
     public ResponseEntity<List<UserGroupResponseDTO>> getUserGroupWithCurrentLogin(){
         return splitService.getGroupOfCurrentUser();
+    }
+
+    @GetMapping("/search/user/{query}")
+    public ResponseEntity<List<UserDto>> getAllUsers(@PathVariable String query) {
+        return splitService.searchUsers(query);
     }
 
 }
